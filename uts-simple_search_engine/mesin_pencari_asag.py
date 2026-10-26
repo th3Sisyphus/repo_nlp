@@ -3,10 +3,11 @@ Cara menjalankan:
   python mesin_pencari_asag.py                      # mode terminal, korpus di ./corpus
   python mesin_pencari_asag.py --folder corpus --lang en
   python mesin_pencari_asag.py --kueri "semantic similarity grading"
-  python mesin_pencari_asag.py --gui                # antarmuka grafis (bonus)
+  streamlit run app_streamlit.py                    # antarmuka web Streamlit (bonus)
 """
 
 import argparse
+import logging
 import math
 import os
 import sys
@@ -28,6 +29,9 @@ EXTRA_STOPWORDS = {
     "figure", "table", "pp", "vol", "no", "arxiv", "preprint", "ieee", "acm",
     "springer", "elsevier", "copyright", "license", "creative", "commons",
 }
+
+# pypdf mencetak banyak peringatan format PDF yang tidak memengaruhi hasil ekstraksi.
+logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 def baca_berkas(path):
     """Baca satu berkas menjadi satu string panjang. Kembalikan None jika tipe tidak didukung."""
@@ -204,63 +208,6 @@ def mode_terminal(idx, praproses, info, topn):
         print(f"Token kueri setelah praproses: {token}")
         cetak_hasil(hasil, info, topn)
 
-def mode_gui(idx, praproses, info, korpus, topn):
-    import tkinter as tk
-    from tkinter import ttk
-
-    teks_dok = {d["kode"]: d["teks"] for d in korpus}
-    root = tk.Tk()
-    root.title("Mesin Pencari Mini - Automated Short Answer Grading")
-    root.geometry("860x620")
-
-    atas = ttk.Frame(root, padding=8)
-    atas.pack(fill="x")
-    entri = ttk.Entry(atas, font=("Segoe UI", 12))
-    entri.pack(side="left", fill="x", expand=True, padx=(0, 8))
-    entri.focus()
-    status = ttk.Label(root, text="Ketik kueri lalu tekan Enter.", padding=(8, 0))
-    status.pack(fill="x")
-
-    kolom = ("rank", "kode", "cosine", "judul")
-    tabel = ttk.Treeview(root, columns=kolom, show="headings", height=10)
-    for nama, lebar in zip(kolom, (50, 60, 90, 600)):
-        tabel.heading(nama, text=nama.capitalize())
-        tabel.column(nama, width=lebar, anchor="w")
-    tabel.pack(fill="x", padx=8, pady=6)
-
-    pratinjau = tk.Text(root, wrap="word", height=14)
-    pratinjau.pack(fill="both", expand=True, padx=8, pady=(0, 8))
-
-    def proses_cari(_=None):
-        for baris in tabel.get_children():
-            tabel.delete(baris)
-        pratinjau.delete("1.0", "end")
-        kueri = entri.get().strip()
-        if not kueri:
-            return
-        token, hasil = cari(kueri, idx, praproses)
-        if not hasil:
-            status.config(text=f"Tidak ada hasil. Token kueri: {token}")
-            return
-        status.config(text=f"{len(hasil)} dokumen cocok. Token kueri: {token}. "
-                           "Klik baris untuk melihat isi dokumen.")
-        for r, (kode, skor) in enumerate(hasil[:topn], start=1):
-            tabel.insert("", "end", values=(r, kode, f"{skor:.4f}", info[kode]["judul"]))
-
-    def tampilkan_isi(_=None):
-        pilih = tabel.selection()
-        if not pilih:
-            return
-        kode = tabel.item(pilih[0], "values")[1]
-        pratinjau.delete("1.0", "end")
-        pratinjau.insert("1.0", teks_dok[kode][:3000])
-
-    ttk.Button(atas, text="Cari", command=proses_cari).pack(side="left")
-    entri.bind("<Return>", proses_cari)
-    tabel.bind("<<TreeviewSelect>>", tampilkan_isi)
-    root.mainloop()
-
-
 # ---------------------------------------------------------------------------
 # Program utama
 # ---------------------------------------------------------------------------
@@ -271,7 +218,6 @@ def main():
                     help="bahasa artikel: en (default) atau id")
     ap.add_argument("--kueri", help="jalankan satu kueri lalu selesai")
     ap.add_argument("--topn", type=int, default=15, help="jumlah hasil yang ditampilkan")
-    ap.add_argument("--gui", action="store_true", help="buka antarmuka grafis (bonus)")
     args = ap.parse_args()
 
     siapkan_nltk()
@@ -309,9 +255,7 @@ def main():
         print(teratas)
     print("\nMatriks lengkap tersimpan di frekuensi_term.csv dan tfidf_transpose.csv\n")
 
-    if args.gui:
-        mode_gui(idx, praproses, info, korpus, args.topn)
-    elif args.kueri:
+    if args.kueri:
         token, hasil = cari(args.kueri, idx, praproses)
         print(f"Token kueri setelah praproses: {token}")
         cetak_hasil(hasil, info, args.topn)

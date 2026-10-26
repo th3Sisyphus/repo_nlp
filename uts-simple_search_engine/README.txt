@@ -12,20 +12,33 @@ KEBUTUHAN DAN CARA MENJALANKAN
 Python 3.9 atau lebih baru.
 
 1. Pasang pustaka:
-    pip install requirements.txt
+    pip install -r requirements.txt
 2. Stopword NLTK diunduh otomatis saat program pertama kali berjalan. Bila gagal, jalankan manual:
     python -c "import nltk; nltk.download('stopwords')"
 3. Letakkan 15 artikel di folder corpus/ (sejajar dengan mesin_pencari_asag.py).
-4. Jalankan:
+4. Jalankan versi terminal:
     python mesin_pencari_asag.py                 mode terminal, interaktif
     python mesin_pencari_asag.py --kueri "semantic similarity"
-    python mesin_pencari_asag.py --gui           antarmuka grafis (bonus)
+5. Jalankan versi web (bonus, Streamlit) dari folder ini:
+    streamlit run app_streamlit.py
+   Browser akan membuka http://localhost:8501. Bila tidak terbuka otomatis, buka alamat itu manual.
 
-Luaran:
+Luaran versi terminal:
 - Terminal: daftar dokumen, tabel frekuensi + DF, matriks tf-idf (transpose),
   hasil pencarian terurut berdasarkan Cosine Similarity.
 - frekuensi_term.csv  : frekuensi mentah tiap term per dokumen + DF.
 - tfidf_transpose.csv : matriks tf-idf, baris = term, kolom = dokumen.
+
+Fitur versi web (app_streamlit.py):
+- Tab Cari     : kotak pencarian (ketik query lalu tekan Enter), token hasil praproses,
+                 kartu hasil berperingkat dengan skor cosine, meter skor, cuplikan
+                 teks dengan kata kunci disorot, dan isi dokumen yang bisa dibuka.
+- Tab Statistik: grafik 15 term paling sering muncul dan 15 term dengan bobot tf-idf tertinggi.
+- Tab Matriks  : tabel frekuensi + DF dan matriks tf-idf (transpose) yang bisa difilter,
+                 plus tombol unduh CSV.
+- Tab Korpus   : daftar 15 dokumen beserta kode dan jumlah token.
+- Sidebar      : jumlah hasil, skor cosine minimum, serta NIM dan nama anggota.
+Tema warna diatur di .streamlit/config.toml.
 
 --------------------------------------------------------------------
 DAFTAR JURNAL YANG DIGUNAKAN (judul artikel - link jurnal)
