@@ -703,7 +703,7 @@ st.html(f"""
 <div class="hero">
   <span class="badge">Mesin Pencari Dokumen Ilmiah · Korpus ASAG</span>
   <h1>ASAG Search</h1>
-  <p>Pencarian artikel ilmiah seputar Automated Short Answer Grading berbasis kemiripan teks.</p>
+  <p>Pencarian artikel ilmiah: Automated Short Answer Grading berbasis kemiripan teks.</p>
 </div>
 <div class="grid-stat">
   <div class="stat"><div class="angka">{len(korpus)}</div><div class="label">Total Dokumen</div></div>
